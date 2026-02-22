@@ -7,7 +7,8 @@
   
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#f19eb0">
-  <link rel="apple-touch-icon" href="icono.png">
+  <link rel="icon" type="image/x-icon" href="icono.ico">
+  <link rel="apple-touch-icon" href="icono.ico">
 
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
 
@@ -18,19 +19,9 @@
       --text:#7d5a5a; --card:#ffffff;
     }
 
-    /* Temas adicionales */
-    [data-theme="lavanda"] {
-      --pink-bg:#f3e5f5; --pink-soft:#ce93d8; --pink-dark:#8e24aa;
-      --text:#4a148c;
-    }
-    [data-theme="oceano"] {
-      --pink-bg:#e0f7fa; --pink-soft:#4dd0e1; --pink-dark:#00838f;
-      --text:#006064;
-    }
-    [data-theme="oscuro"] {
-      --pink-bg:#1a1a1a; --pink-soft:#444; --pink-dark:#f19eb0;
-      --text:#eee; --card:#2d2d2d;
-    }
+    [data-theme="lavanda"] { --pink-bg:#f3e5f5; --pink-soft:#ce93d8; --pink-dark:#8e24aa; --text:#4a148c; }
+    [data-theme="oceano"] { --pink-bg:#e0f7fa; --pink-soft:#4dd0e1; --pink-dark:#00838f; --text:#006064; }
+    [data-theme="oscuro"] { --pink-bg:#1a1a1a; --pink-soft:#444; --pink-dark:#f19eb0; --text:#eee; --card:#2d2d2d; }
 
     *{box-sizing:border-box}
     body{font-family:'Quicksand',sans-serif; background:var(--pink-bg); color:var(--text); margin:0; padding:20px; transition: all 0.3s ease;}
@@ -198,13 +189,7 @@
 
   <script>
     const daysNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-    const dailyQuotes = [
-        "✨ No tiene que ser perfecto, solo hecho.",
-        "🌸 Pequeños pasos hacen grandes cambios.",
-        "💖 Eres capaz de cosas increíbles hoy.",
-        "⭐ Tu esfuerzo vale mucho, ¡sigue así!",
-        "🌈 El éxito es la suma de pequeños esfuerzos."
-    ];
+    const dailyQuotes = ["✨ No tiene que ser perfecto, solo hecho.", "🌸 Pequeños pasos hacen grandes cambios.", "💖 Eres capaz de cosas increíbles hoy."];
     const messagesDone = ["¡Súper! Un check más y vas genial 💖", "¡Lo lograste! Estoy orgulloso de ti 🌸", "¡Wow! Esa tarea ya quedó lista 🎀", "¡Vamos! Cada check es una victoria ⭐"];
     const messagesUndo = ["No pasa nada 😊 Lo intentas de nuevo.", "Respira 💕 Todo a tu ritmo.", "Tranquila ✨ Lo importante es seguir."];
 
@@ -310,6 +295,42 @@
       }
     }
 
+    // LÓGICA DE RACHAS IMPLEMENTADA
+    function updateStreaks(isComplete) {
+        let streak = parseInt(localStorage.getItem('streakNow')) || 0;
+        let best = parseInt(localStorage.getItem('streakBest')) || 0;
+        let lastDate = localStorage.getItem('lastCompletionDate');
+        const today = new Date().toLocaleDateString();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toLocaleDateString();
+
+        if (isComplete) {
+            if (lastDate !== today) {
+                if (lastDate === yesterdayStr) {
+                    streak++;
+                } else {
+                    streak = 1;
+                }
+                localStorage.setItem('lastCompletionDate', today);
+                localStorage.setItem('streakNow', streak);
+                if (streak > best) {
+                    best = streak;
+                    localStorage.setItem('streakBest', best);
+                }
+            }
+        } else if (lastDate === today) {
+            // Si desmarcan algo hoy, restamos el progreso
+            streak--;
+            localStorage.setItem('streakNow', Math.max(0, streak));
+            localStorage.setItem('lastCompletionDate', yesterdayStr);
+        }
+        
+        document.getElementById('streakNow').innerText = streak;
+        document.getElementById('streakBest').innerText = best;
+        return streak;
+    }
+
     function updateUI() {
       const total = document.querySelectorAll('input[type="checkbox"]').length;
       const done = document.querySelectorAll('input[type="checkbox"]:checked').length;
@@ -335,15 +356,20 @@
         focusText.innerText = "Empieza con algo fácil para calentar 💕";
       }
 
+      // Cálculo de Rachas y Logros
+      const currentStreak = updateStreaks(percent >= 100);
+
       document.getElementById('ach1').style.opacity = done >= 1 ? "1" : "0.5";
       document.getElementById('ach2').style.opacity = percent >= 50 ? "1" : "0.5";
       document.getElementById('ach3').style.opacity = percent >= 100 ? "1" : "0.5";
+      document.getElementById('ach4').style.opacity = currentStreak >= 3 ? "1" : "0.5";
+      document.getElementById('ach5').style.opacity = currentStreak >= 7 ? "1" : "0.5";
       
       document.getElementById('dailyQuote').innerText = dailyQuotes[Math.floor(Math.random()*dailyQuotes.length)];
     }
 
     function downloadBackup() {
-      const backup = { html: {}, checks: {} };
+      const backup = { html: {}, checks: {}, streakNow: localStorage.getItem('streakNow'), streakBest: localStorage.getItem('streakBest') };
       for (let i = 0; i < 7; i++) { 
           backup.html[i] = localStorage.getItem('tasks_html_' + i);
           ['esenciales', 'colegio', 'talentos', 'casa'].forEach(cat => {
@@ -368,6 +394,8 @@
                 if (data.checks[`${i}_${cat}`]) localStorage.setItem(`checks_${i}_${cat}`, data.checks[`${i}_${cat}`]);
             });
         }
+        if(data.streakNow) localStorage.setItem('streakNow', data.streakNow);
+        if(data.streakBest) localStorage.setItem('streakBest', data.streakBest);
         location.reload();
       };
       reader.readAsText(file);
