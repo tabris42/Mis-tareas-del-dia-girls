@@ -1,0 +1,17 @@
+{
+  "name": "Mis tareas semanales ✨",
+  "short_name": "Mis Tareas",
+  "description": "Aplicación de seguimiento de tareas y hábitos semanales.",
+  "start_url": "codigo.html",
+  "display": "standalone",
+  "background_color": "#fff0f3",
+  "theme_color": "#f19eb0",
+  "icons": [
+    {
+      "src": "icono.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
