@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mis tareas semanales ✨</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#f19eb0">
+  <link rel="apple-touch-icon" href="icono.png">
+
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
 
   <style>
@@ -316,7 +321,6 @@
       const petSay = document.getElementById('petSay');
       const focusText = document.getElementById('todayFocus');
 
-      // Lógica de mensajes motivacionales corregida
       if(percent >= 100) {
         petSay.innerHTML = "¡Lo lograste! <span>Día completito 💖</span>";
         focusText.innerText = "¡Día superado! Disfruta tu descanso 🌈";
